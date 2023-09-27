@@ -30,12 +30,32 @@ def is_pdf_file(file):
 
 # File upload widget
 
-file_path = None
 with st.sidebar:
     st.sidebar.title("PDF Upload")
         
     uploaded_file = st.sidebar.file_uploader("Upload a PDF file", type=["pdf"])
 
+    if uploaded_file is None:
+        st.sidebar.success("No file uploaded. Loaded example `**2023 Dental plan benefit table**` PDF from a Delta. Feel free to upload your own plan benefit or EoB pdf...")
+        file_path = Path("plans_table.pdf")
+            
+        def create_contexts(input_path = file_path):
+
+            from pypdf import PdfReader
+
+            reader = PdfReader(input_path)
+            text = ""
+            contexts = ""
+            for page in reader.pages:
+                text += page.extract_text() + "\n"
+                if len(text) > 0:
+                    contexts += f"### Here is the context: \n#\n# " 
+                    contexts += ''.join(text)
+                else:
+                    contexts +="### There is no text here"
+
+            return contexts
+        
     if uploaded_file is not None:
         if is_pdf_file(uploaded_file):
             st.sidebar.success("PDF file uploaded successfully!")
@@ -43,7 +63,7 @@ with st.sidebar:
             # Add your chat input or interaction components here
             # st.write("You can now interact with the chat input or other components.")
 
-            def create_contexts(input_path=file_path):
+            def create_contexts(uploaded_file):
 
                 from pypdf import PdfReader
 
@@ -60,33 +80,32 @@ with st.sidebar:
 
                 return contexts
 
-            # Inspired by this code: https://github.com/openai/openai-cookbook/blob/main/examples/How_to_call_functions_with_chat_models.ipynb & https://platform.openai.com/docs/guides/gpt/function-calling
-            def create_prompt():
-                context = create_contexts(input_path=file_path)
-                chat_prompt = [
-                    {
-                        "role": "system", #prompt created by chat.openai.com based on prompting.
-                        "content": 
-                            """Your name is `Clarity`. You are a truthful and friendly dental insurance assistant. Your role is to simplify explanation of benefits (EoBs) and plan benefits for members / enrollees. You will already have the context so don't ask the user for it again.
-                            Please follow this conversation flow:
-                            1. Begin by introducing yourself and role.
-                            2. Engage in a natural conversation with the user, addressing any questions or concerns they may have about dental insurance.
-                            Remember to maintain a helpful and informative tone throughout the conversation.
-                            3. Don't ask again for information they've given you in the chat history.
-                            4. If they ask you to recommend a plan based on existing context confirm that it's not your role. That you a simply a conversational AI to make benefits simple to understand.
-                            5. Feel free to clean up typos and make conservative guesses about mispelled words. The context is the result of an OCR process.
-                            6. Lastly but important, don't make errors, fix typos, be concise and if the question can't be answered based on the context, acknowledge that you don't know and respond with \"I can connect you with a customer service representative who can better assist you if you'd like.\"" Feel free to provide this link [Elijah Adeoye](mailto:eadeoye@deltadentalwa.com). \n#\n
-                            ### Here is the context: {}\n#\n#
-                            """.format(context)
-                    }
-                ]
-
-                return chat_prompt
         else:
             st.sidebar.error("Please upload a valid PDF file.")
 
 
 if file_path !=None:
+    def create_prompt():
+        context = create_contexts()
+        chat_prompt = [
+            {
+                "role": "system", #prompt created by chat.openai.com based on prompting.
+                "content": 
+                    """Your name is `Clarity`. You are a truthful and friendly dental insurance assistant. Your role is to simplify explanation of benefits (EoBs) and plan benefits for members / enrollees. You will already have the context so don't ask the user for it again.
+                    Please follow this conversation flow:
+                    1. Begin by introducing yourself and role.
+                    2. Engage in a natural conversation with the user, addressing any questions or concerns they may have about dental insurance.
+                    Remember to maintain a helpful and informative tone throughout the conversation.
+                    3. Don't ask again for information they've given you in the chat history.
+                    4. If they ask you to recommend a plan based on existing context confirm that it's not your role. That you a simply a conversational AI to make benefits simple to understand.
+                    5. Feel free to clean up typos and make conservative guesses about mispelled words. The context is the result of an OCR process.
+                    6. Lastly but important, don't make errors, fix typos, be concise and if the question can't be answered based on the context, acknowledge that you don't know and respond with \"I can connect you with a customer service representative who can better assist you if you'd like.\"" Feel free to provide this link [Elijah Adeoye](mailto:eadeoye@deltadentalwa.com). \n#\n
+                    ### Here is the context: {}\n#\n#
+                    """.format(context)
+            }
+        ]
+
+        return chat_prompt
 
 
     if "messages" not in st.session_state:
