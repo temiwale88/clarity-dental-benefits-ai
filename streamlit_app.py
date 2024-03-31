@@ -184,7 +184,7 @@ if file_path !=None:
 
 st.sidebar.write(f"""
     ### Description
-    This application is a Generative AI proof-of-concept. It features an AI chatbot assistant that can intelligently hold long form conversations with dental plan members. This bot helps members provider clarity 😂 and simplify plan benefits, Explanation of Benefits (EoBs), and dental insurance all together. **Note** that this is ***not production-grade*** but a simple deployment for a demonstration. So feel free to break it 😉
+    This application is a Generative AI proof-of-concept. It features an AI chatbot assistant that can intelligently hold long form conversations with dental plan members. This bot helps members provide clarity 😂 and simplify plan benefits, Explanation of Benefits (EoBs), and dental insurance all together. **Note** that this is ***not production-grade*** but a simple deployment for a demonstration. So feel free to break it 😉
     
     ---
     
